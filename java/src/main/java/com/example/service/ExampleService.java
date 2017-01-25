@@ -1,6 +1,7 @@
 package com.example.service;
 
 import com.example.flow.ExampleFlow;
+import com.example.flow.IoIFlow;
 import kotlin.jvm.JvmClassMappingKt;
 import net.corda.core.node.PluginServiceHub;
 
@@ -11,7 +12,7 @@ import net.corda.core.node.PluginServiceHub;
  * corresponding factory will be used to create the flow which will communicate with the other side. If there is no
  * mapping then the session attempt is rejected.
  *
- * In short, this bit of code is required for the seller in this Example scenario to repond to the buyer using the
+ * In short, this bit of code is required for the seller in this Example scenario to respond to the buyer using the
  * [ExampleFlow.Acceptor] flow.
  */
 public class ExampleService {
@@ -20,5 +21,12 @@ public class ExampleService {
                 JvmClassMappingKt.getKotlinClass(ExampleFlow.Initiator.class),
                 ExampleFlow.Acceptor::new
         );
+
+        services.registerFlowInitiator(
+                JvmClassMappingKt.getKotlinClass(IoIFlow.Initiator.class),
+                IoIFlow.Acceptor::new
+        );
+
+
     }
 }

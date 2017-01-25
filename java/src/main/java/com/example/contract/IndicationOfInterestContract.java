@@ -1,7 +1,6 @@
 package com.example.contract;
 
 import com.example.model.IndicationOfInterest;
-import com.example.model.PurchaseOrder;
 import kotlin.Unit;
 import net.corda.core.Utils;
 import net.corda.core.contracts.*;
@@ -33,14 +32,14 @@ public class IndicationOfInterestContract implements Contract {
     /**
      * Filters the command list by type, party and public key all at once.
      */
-    private List<AuthenticatedObject<PurchaseOrderContract.Commands>> extractCommands(TransactionForContract tx) {
+    private List<AuthenticatedObject<IndicationOfInterestContract.Commands>> extractCommands(TransactionForContract tx) {
         return tx.getCommands()
                 .stream()
-                .filter(command -> command.getValue() instanceof PurchaseOrderContract.Commands)
+                .filter(command -> command.getValue() instanceof IndicationOfInterestContract.Commands)
                 .map(command -> new AuthenticatedObject<>(
                         command.getSigners(),
                         command.getSigningParties(),
-                        (PurchaseOrderContract.Commands) command.getValue()))
+                        (IndicationOfInterestContract.Commands) command.getValue()))
                 .collect(toList());
     }
 
@@ -52,7 +51,7 @@ public class IndicationOfInterestContract implements Contract {
     public void verify(TransactionForContract tx) {
         ClauseVerifier.verifyClause(
                 tx,
-                new AllComposition<>(new PurchaseOrderContract.Clauses.Timestamp(), new PurchaseOrderContract.Clauses.Group()),
+                new AllComposition<>(new IndicationOfInterestContract.Clauses.Timestamp(), new IndicationOfInterestContract.Clauses.Group()),
                 extractCommands(tx));
     }
 
@@ -104,7 +103,7 @@ public class IndicationOfInterestContract implements Contract {
          */
         class Place extends Clause<IndicationOfInterestState, IndicationOfInterestContract.Commands, UniqueIdentifier> {
             @Override public Set<Class<? extends CommandData>> getRequiredCommands() {
-                return Collections.singleton(PurchaseOrderContract.Commands.Place.class);
+                return Collections.singleton(IndicationOfInterestContract.Commands.Place.class);
             }
 
             @Override public Set<IndicationOfInterestContract.Commands> verify(TransactionForContract tx,
@@ -124,7 +123,7 @@ public class IndicationOfInterestContract implements Contract {
                     require.by("Only one output state should be created for each group.",
                             outputs.size() == 1);
                     require.by("The buyer and the seller cannot be the same entity.",
-                            out.getBuyer() != out.getSeller());
+                            !out.getBuyer().equals(out.getSeller()));
                     require.by("All of the participants must be signers.",
                             command.getSigners().containsAll(out.getParticipants()));
 

@@ -28,7 +28,7 @@ app.controller('DemoAppController', function($http, $location, $uibModal) {
 
     // We identify the node based on its localhost port.
     const nodePort = $location.port();
-    const apiBaseURL = "http://localhost:" + nodePort + "/api/example/";
+    const apiBaseURL = "http://localhost:" + nodePort + "/api/ioi/";
     let peers = [];
 
     $http.get(apiBaseURL + "me").then((response) => demoApp.thisNode = response.data.me);
@@ -49,7 +49,7 @@ app.controller('DemoAppController', function($http, $location, $uibModal) {
         modalInstance.result.then(() => {}, () => {});
     };
 
-    demoApp.getPOs = () => $http.get(apiBaseURL + "purchase-orders")
+    demoApp.getPOs = () => $http.get(apiBaseURL + "iois")
         .then((response) => demoApp.pos = Object.keys(response.data)
             .map((key) => response.data[key].state.data)
             .reverse());
@@ -87,7 +87,7 @@ app.controller('ModalInstanceCtrl', function ($http, $location, $uibModalInstanc
             const createPoEndpoint =
                 apiBaseURL +
                 modalInstance.form.counterparty +
-                "/create-purchase-order";
+                "/create-ioi";
 
             // Create PO and handle success / fail responses.
             $http.put(createPoEndpoint, angular.toJson(po)).then(

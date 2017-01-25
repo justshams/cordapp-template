@@ -1,8 +1,12 @@
 package com.example.api;
 
+import com.example.contract.IndicationOfInterestContract;
+import com.example.contract.IndicationOfInterestState;
 import com.example.contract.PurchaseOrderContract;
 import com.example.contract.PurchaseOrderState;
 import com.example.flow.ExampleFlow;
+import com.example.flow.IoIFlow;
+import com.example.model.IndicationOfInterest;
 import com.example.model.PurchaseOrder;
 import net.corda.core.contracts.ContractState;
 import net.corda.core.contracts.StateAndRef;
@@ -20,7 +24,7 @@ import static java.util.Collections.singletonMap;
 import static java.util.stream.Collectors.toList;
 
 // This API is accessible from /api/example. All paths specified below are relative to it.
-@Path("example")
+@Path("ioi")
 public class ExampleApi {
     private final CordaRPCOps services;
     private final String myLegalName;
@@ -110,4 +114,65 @@ public class ExampleApi {
                 .entity(result.toString())
                 .build();
     }
+
+
+    /**
+     * Displays all purchase order states that exist in the vault.
+     */
+    @GET
+    @Path("iois")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<StateAndRef<ContractState>> getIndicationOfInterests() {
+        return services.vaultAndUpdates().getFirst();
+    }
+
+
+    /**
+     * This should only be called from the 'buyer' node. It initiates a flow to agree a purchase order with a
+     * seller. Once the flow finishes it will have written the purchase order to ledger. Both the buyer and the
+     * seller will be able to see it when calling /api/example/purchase-orders on their respective nodes.
+     *
+     * This end-point takes a Party name parameter as part of the path. If the serving node can't find the other party
+     * in its network map cache, it will return an HTTP bad request.
+     *
+     * The flow is invoked asynchronously. It returns a future when the flow's call() method returns.
+     */
+    @PUT
+    @Path("{party}/create-ioi")
+    public Response createIndicationOfInterest(IndicationOfInterest indicationOfInterest, @PathParam("party") String partyName) throws InterruptedException, ExecutionException {
+        final Party otherParty = services.partyFromName(partyName);
+
+        if (otherParty == null) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        final IndicationOfInterestState state = new IndicationOfInterestState(
+                indicationOfInterest,
+                services.nodeIdentity().getLegalIdentity(),
+                otherParty,
+                new IndicationOfInterestContract());
+
+        // The line below blocks and waits for the flow to return.
+        final IoIFlow.IoIFlowResult result = services
+                .startFlowDynamic(IoIFlow.Initiator.class, state, otherParty)
+                .getReturnValue()
+                .toBlocking()
+                .first();
+
+        final Response.Status status;
+        if (result instanceof IoIFlow.IoIFlowResult.Success) {
+            status = Response.Status.CREATED;
+        } else {
+            status = Response.Status.BAD_REQUEST;
+        }
+
+        return Response
+                .status(status)
+                .entity(result.toString())
+                .build();
+    }
+
+
+
+
 }

@@ -2,9 +2,13 @@ package com.example.plugin;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.example.api.ExampleApi;
+import com.example.contract.IndicationOfInterestContract;
+import com.example.contract.IndicationOfInterestState;
 import com.example.contract.PurchaseOrderContract;
 import com.example.contract.PurchaseOrderState;
 import com.example.flow.ExampleFlow;
+import com.example.flow.IoIFlow;
+import com.example.model.IndicationOfInterest;
 import com.example.model.PurchaseOrder;
 import com.example.service.ExampleService;
 import net.corda.core.crypto.Party;
@@ -36,11 +40,18 @@ public class ExamplePlugin extends CordaPluginRegistry {
      * here, then the flow state machine will _not_ invoke the flow. Instead, an exception will be raised.
      */
     private final Map<String, Set<String>> requiredFlows = Collections.singletonMap(
-            ExampleFlow.Initiator.class.getName(),
+           /* ExampleFlow.Initiator.class.getName(),
             new HashSet<>(Arrays.asList(
                     PurchaseOrderState.class.getName(),
+                    Party.class.getName()*/
+            IoIFlow.Initiator.class.getName(),
+            new HashSet<>(Arrays.asList(
+                    IndicationOfInterestState.class.getName(),
                     Party.class.getName()
             )));
+
+
+
 
     /**
      * A list of long lived services to be hosted within the node. Typically you would use these to register flow
@@ -54,11 +65,13 @@ public class ExamplePlugin extends CordaPluginRegistry {
      */
     private final Map<String, String> staticServeDirs = Collections.singletonMap(
             // This will serve the exampleWeb directory in resources to /web/example
-            "example", getClass().getClassLoader().getResource("exampleWeb").toExternalForm()
+            "ioi", getClass().getClassLoader().getResource("ioiweb").toExternalForm()
     );
 
     @Override public List<Function<CordaRPCOps, ?>> getWebApis() { return webApis; }
-    @Override public Map<String, Set<String>> getRequiredFlows() { return requiredFlows; }
+    @Override public Map<String, Set<String>> getRequiredFlows() {
+
+        return requiredFlows; }
     @Override public List<Function<PluginServiceHub, ?>> getServicePlugins() { return servicePlugins; }
     @Override public Map<String, String> getStaticServeDirs() { return staticServeDirs; }
 
@@ -66,6 +79,11 @@ public class ExamplePlugin extends CordaPluginRegistry {
      * Register required types with Kryo (our serialisation framework).
      */
     @Override public boolean registerRPCKryoTypes(Kryo kryo) {
+        kryo.register(IndicationOfInterest.class);
+        kryo.register(IndicationOfInterestContract.class);
+        kryo.register(IndicationOfInterestState.class);
+        kryo.register(IoIFlow.IoIFlowResult.Success.class);
+        kryo.register(IoIFlow.IoIFlowResult.Failure.class);
         kryo.register(PurchaseOrderState.class);
         kryo.register(PurchaseOrderContract.class);
         kryo.register(PurchaseOrder.class);

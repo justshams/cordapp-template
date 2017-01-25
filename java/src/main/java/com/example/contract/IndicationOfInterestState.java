@@ -1,8 +1,8 @@
 package com.example.contract;
 
-import com.example.contract.PurchaseOrderContract.Commands.Place;
+import com.example.contract.IndicationOfInterestContract.Commands.Place;
 import com.example.model.IndicationOfInterest;
-import com.example.model.PurchaseOrder;
+
 import net.corda.core.contracts.Command;
 import net.corda.core.contracts.DealState;
 import net.corda.core.contracts.TransactionType;

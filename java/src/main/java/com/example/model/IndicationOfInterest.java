@@ -13,6 +13,10 @@ public class IndicationOfInterest {
     private String ticker;
     private double price;
 
+    public IndicationOfInterest() {
+        //default constructor
+    }
+
     public IndicationOfInterest(int quantity, String ticker, double price) {
         this.quantity = quantity;
         this.ticker = ticker;
